@@ -1,0 +1,22 @@
+# MIPS-32 Abstract:
+-> MIPS microarchitecture is divided into the PROCESSOR side and the EXT MEMORY side
+- 'Datapath' and 'Controller' are the two main sections of the PROCESSOR side
+- 'Data Memory' and 'Instruction Memory' are the two main sections of the EXT MEMORY side
+- Reading is asynchronous i.e. as soon as the Address is provided, the instruction or the data is given out
+- Writing is Synchronous i.e. it occurs only when the WE/Write Enable bit is turned on
+
+* Datapath:
+	- It consists of the actually calculating machinery like MUX, ALU, etc.
+
+* Controller:
+	- It decodes the instruction fed into Datapath
+	- It tells the Datapath how to execute a particular instruction/ calculation
+
+* Instruction Memory:
+	- It holds the 32-bit instructions, the CPU is supposed to execute
+	- The PC/Program Counter is a register which keeps a track of the current instruction being executed by the CPU, hence it points to the Instructions Memory from the Datapath
+	- Istructions can only be read. There is no WD/Write port in the Instruction memory
+
+* Data Memory:
+	- It holds the address of the data. It allows both reading and writing data
+
