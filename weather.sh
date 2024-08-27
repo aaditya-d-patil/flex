@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-api_key="c9f4518cd7c0db2069bc6c793664b7f8"
+api_key="/*Enter an API key from openweathermap.org*/"
 
 get_weather() {
     local city="$1"
