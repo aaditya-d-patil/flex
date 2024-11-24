@@ -20,18 +20,19 @@ create_todo() {
 
 create_todo_timer() {
     local todo="$1"
+    local days="$2"
+    local minutes="$3"
     local todo_count=$(wc -l < "$todo_file")
     echo "$((todo_count + 1)). $todo" >> "$todo_file"
     echo "Todo Added: $todo"
 
-    local days="$2"
-    local minutes="$3"
-
     # Calculate the total time in seconds
-    total_seconds=$((days * 86400 + minutes * 60))
+    local total_seconds=$((days * 86400 + minutes * 60))
 
-    (sleep $total_seconds && wt.exe bash ./open_terminal.sh "$todo") &
+    # Execute the reminder after the timer ends
+    (sleep $total_seconds && echo "Reminder: $todo" && wt.exe bash ./open_terminal.sh "$todo") &
 }
+
 
 
 delete_todo() {

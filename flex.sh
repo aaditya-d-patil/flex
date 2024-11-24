@@ -4,7 +4,7 @@
 # Tasks:
 # ----------
 # notepad
-# todo list 
+# todo list {set reminders}
 # weather update
 # google search: web scrapping
 # ----------
@@ -117,7 +117,7 @@ while [[ $# -gt 0 ]]; do
             if [[ $2 == "-c" ]]; then
                 if [[ $3  == "-t" ]]; then
                     shift 
-                    create_todo_timer="./ToDo.sh -c -t \"$1 $2 $3\""   
+                    create_todo_cmd_timer="./ToDo.sh -c -t \"$3\" \"$4\" \"$5\""
                     eval "$create_todo_cmd_timer"
                     exit
                 else
