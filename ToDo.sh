@@ -1,6 +1,19 @@
 #!/usr/bin/bash
 
-todo_file="todo.txt"
+#check if json file exists
+if [ ! -f "$todo_file" ]; then
+    echo -e "[\n]" > "$todo_file"
+fi
+
+#read content from json file
+read_json() {
+    tr -d '\n' < "$todo_file" # Remove newlines to ensure JSON stays compact
+}
+
+#write content to json file
+write_json() {
+    echo -e "$1\n]" > "$todo_file" # Reformat and save
+}
 
 show_todo() {
     if [ -s "$todo_file" ]; then
@@ -12,10 +25,26 @@ show_todo() {
 }
 
 create_todo() {
-    local todo="$1"
-    local todo_count=$(wc -l < "$todo_file")
-    echo "$((todo_count + 1)). $todo" >> "$todo_file"
-    echo "Todo Added: $todo"
+    local task="$1"
+    local priority="${2:-Low}"
+    local due_date="${3:-null}"
+    local id=1
+    local new_task="{\"id\":$id,\"task\":\"$task\",\"priority\":\"$priority\",\"due_date\":\"$due_date\",\"status\":\"Pending\"}"
+
+    echo "New Task JSON: $new_task" # Debug line
+
+    tmp="tmp.json"
+    cat $todo_file | head -n -1 > $tmp
+    tmp_next=$(cat "$tmp")
+    
+    if [[ $tmp_next == "[" ]]; then
+        to_add="$tmp_next$new_task"
+        write_json $to_add
+    else
+        to_add="$tmp_next,$new_task"
+        write_json $to_add
+    fi
+   
 }
 
 create_todo_timer() {

@@ -122,7 +122,7 @@ while [[ $# -gt 0 ]]; do
                     exit
                 else
                     shift          
-                    create_todo_cmd="./ToDo.sh -c \"$2\""
+                    create_todo_cmd="./ToDo.sh -c \"$2\" \"$3\" \"$4\""
                     eval "$create_todo_cmd"
                     exit
                 fi
