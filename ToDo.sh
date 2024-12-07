@@ -1,9 +1,14 @@
 #!/usr/bin/bash
 
+#todo file
+todo_file="todo.json"
+
 #check if json file exists
-if [ ! -f "$todo_file" ]; then
-    echo -e "[\n]" > "$todo_file"
-fi
+check_and_create_json() {
+    if [ ! -f "$todo_file" ]; then
+        echo -e "[\n]" > "$todo_file"
+    fi
+}
 
 #read content from json file
 read_json() {
@@ -25,6 +30,7 @@ show_todo() {
 }
 
 create_todo() {
+    check_and_create_json
     local task="$1"
     local priority="${2:-Low}"
     local due_date="${3:-null}"
