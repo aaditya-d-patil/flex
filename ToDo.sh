@@ -2,7 +2,7 @@
 
 #todo file
 todo_file="todo.json"
-
+declare -i id=10
 #check if json file exists
 check_and_create_json() {
     if [ ! -f "$todo_file" ]; then
@@ -34,8 +34,9 @@ create_todo() {
     local task="$1"
     local priority="${2:-Low}"
     local due_date="${3:-null}"
-    local id=1
-    local new_task="{\"id\":$id,\"task\":\"$task\",\"priority\":\"$priority\",\"due_date\":\"$due_date\",\"status\":\"Pending\"}"
+    
+    id=$(jq '.[-1].id' "$todo_file")
+    id=$((id + 1))
 
     echo "New Task JSON: $new_task" # Debug line
 
@@ -44,9 +45,12 @@ create_todo() {
     tmp_next=$(cat "$tmp")
     
     if [[ $tmp_next == "[" ]]; then
+        id=1
+        local new_task="{\"id\":$id,\"task\":\"$task\",\"priority\":\"$priority\",\"due_date\":\"$due_date\",\"status\":\"Pending\"}"
         to_add="$tmp_next$new_task"
         write_json $to_add
     else
+        local new_task="{\"id\":$id,\"task\":\"$task\",\"priority\":\"$priority\",\"due_date\":\"$due_date\",\"status\":\"Pending\"}"
         to_add="$tmp_next,$new_task"
         write_json $to_add
     fi
@@ -89,13 +93,14 @@ while [[ $# -gt 0 ]]; do
         -c)
             if [[ $2 == "-t" ]]; then
                 shift 2
-                create_todo_timer "$1" "$2" "$3"
+                create_todo "$1" 
                 shift
                 exit
                 
             else
                 shift
-                create_todo "$1"
+                create_todo "$1" "$2" "$3" "$4"
+                echo "todo it is"
                 shift
                 exit      
             fi
