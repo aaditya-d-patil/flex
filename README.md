@@ -12,5 +12,5 @@
 ## Requirements:
 	- Set a config file to enable ./flex.sh usage with keyword 'flex'
 	- Make a file heirarchy to resolve the file confusion
-	- Switch ToDo storage to json instead of txt
+	- Upgrade edit, delete and timer functionalities of todo
 --------------------------------------------------------------------------
