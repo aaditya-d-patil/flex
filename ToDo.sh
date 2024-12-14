@@ -22,10 +22,41 @@ write_json() {
 
 show_todo() {
     if [ -s "$todo_file" ]; then
-        echo "To-Do List:"
-        cat "$todo_file"
+        jq -c '.[]' "$todo_file" | while read -r todo; do
+            local id=$(echo "$todo" | jq -r '.id')
+            local task=$(echo "$todo" | jq -r '.task')
+            local priority=$(echo "$todo" | jq -r '.priority')
+            local due_date=$(echo "$todo" | jq -r '.due_day')
+
+            # Get remaining time
+            if [[ "$due_date" != "null" ]]; then
+                local remaining_time=$(get_remaining_time "$due_date")
+            else
+                local remaining_time="No due date set"
+            fi
+
+            echo "$id] $task | Priority: $priority"
+            echo -e "Due Date: \033[32m $due_date\033[0m, \033[31mRemaining Time: $remaining_time\033[0m"
+            echo "-----------------------------------"
+        done
     else
         echo "To-Do list is empty."
+    fi
+}
+
+get_remaining_time() {
+    local due_date="$1"
+    local current_time=$(date '+%s')
+    local due_time=$(date -d "$due_date" '+%s')
+
+    if (( due_time > current_time )); then
+        local remaining_seconds=$((due_time - current_time))
+        local days=$((remaining_seconds / 86400))
+        local hours=$(( (remaining_seconds % 86400) / 3600 ))
+        local minutes=$(( (remaining_seconds % 3600) / 60 ))
+        echo "$days days, $hours hours, $minutes minutes remaining"
+    else
+        echo "Time's up!"
     fi
 }
 
@@ -33,7 +64,8 @@ create_todo() {
     check_and_create_json
     local task="$1"
     local priority="${2:-Low}"
-    local due_date="${3:-null}"
+    local due_day="${3:-null}"
+    local created_at=$(date '+%Y-%m-%dT%H:%M:%S')
     
     id=$(jq '.[-1].id' "$todo_file")
     id=$((id + 1))
@@ -46,31 +78,39 @@ create_todo() {
     
     if [[ $tmp_next == "[" ]]; then
         id=1
-        local new_task="{\"id\":$id,\"task\":\"$task\",\"priority\":\"$priority\",\"due_date\":\"$due_date\",\"status\":\"Pending\"}"
+        local new_task="{\"id\":$id,\"task\":\"$task\",\"priority\":\"$priority\",\"Created_At\":\"$created_at\",\"due_day\":\"$due_day\"}"
         to_add="$tmp_next$new_task"
         write_json $to_add
     else
-        local new_task="{\"id\":$id,\"task\":\"$task\",\"priority\":\"$priority\",\"due_date\":\"$due_date\",\"status\":\"Pending\"}"
+        local new_task="{\"id\":$id,\"task\":\"$task\",\"priority\":\"$priority\",\"Created_At\":\"$created_at\",\"due_day\":\"$due_day\"}"
         to_add="$tmp_next,$new_task"
         write_json $to_add
+    fi
+
+    if [[ $due_day != "null" ]]; then
+        todo_timer "$task" "$due_day" 
     fi
    
 }
 
-create_todo_timer() {
-    local todo="$1"
-    local days="$2"
-    local minutes="$3"
-    local todo_count=$(wc -l < "$todo_file")
-    echo "$((todo_count + 1)). $todo" >> "$todo_file"
-    echo "Todo Added: $todo"
+todo_timer() {
+    local task="$1"
+    local due_date="$2" # Format: YYYY-MM-DDTHH:MM:SS
 
-    # Calculate the total time in seconds
-    local total_seconds=$((days * 86400 + minutes * 60))
+    local current_time=$(date '+%s')
+    local due_time=$(date -d "$due_date" '+%s')
+    local remaining_seconds=$((due_time - current_time))
+    if [ $? -ne 0 ]; then
+        return 1 # Exit if the function encounters an error
+    fi
 
-    # Execute the reminder after the timer ends
-    (sleep $total_seconds && echo "Reminder: $todo" && wt.exe bash ./open_terminal.sh "$todo") &
+    (
+        sleep $remaining_seconds
+        echo "Reminder: $task "
+        wt.exe bash ./open_terminal.sh "$task"
+    ) &
 }
+
 
 
 
@@ -99,7 +139,7 @@ while [[ $# -gt 0 ]]; do
                 
             else
                 shift
-                create_todo "$1" "$2" "$3" "$4"
+                create_todo "$1" "$2" "$3" 
                 echo "todo it is"
                 shift
                 exit      
